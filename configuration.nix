@@ -14,12 +14,13 @@
   boot.loader.grub.device = "/dev/sda";
 
   environment.systemPackages = with pkgs; [
-    emacs
-    git 
-    nodejs_21 
-    ripgrep
-    vim 
+    git
     (builtins.getFlake "/home/jkaye/git/neovim-flake").packages.x86_64-linux.jkvim
+  ];
+
+  fonts.packages = with pkgs; [
+    fira-code
+    fira-code-symbols
   ];
 
   nix.extraOptions = ''
@@ -41,6 +42,8 @@
       fi
     fi
   '';
+
+  programs.direnv.enable = true;
 
   # This is the server's hostname you chose during the order process. Feel free to change it.
 
