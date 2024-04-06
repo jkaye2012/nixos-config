@@ -15,6 +15,7 @@
 
   environment.systemPackages = with pkgs; [
     git
+    tmux
     (builtins.getFlake "/home/jkaye/git/neovim-flake").packages.x86_64-linux.jkvim
   ];
 
