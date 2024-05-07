@@ -15,7 +15,6 @@
 
   environment.systemPackages = with pkgs; [
     git
-    tmux
     (builtins.getFlake "/home/jkaye/git/neovim-flake").packages.x86_64-linux.jkvim
   ];
 
@@ -46,6 +45,12 @@
     '';
     shellInit = ''
       eval "$(direnv hook bash)"
+
+      develop() {
+        cd $1
+        nix develop
+      }
+      complete -o nospace -F _cd develop
     '';
     shellAliases = {
         rebuild = "sudo nixos-rebuild switch -I nixos-config=/home/jkaye/git/nixos-config/configuration.nix";
@@ -53,6 +58,12 @@
   };
 
   programs.direnv.enable = true;
+
+  programs.tmux = {
+    enable = true;
+    shortcut = "Space";
+    newSession = true;
+  };
 
   # This is the server's hostname you chose during the order process. Feel free to change it.
 
