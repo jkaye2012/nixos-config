@@ -1,8 +1,12 @@
 { config, pkgs, ... }:
 
+let
+  home-manager = builtins.fetchTarball "https://github.com/nix-community/home-manager/archive/master.tar.gz";
+in
 {
   imports = [
     /etc/nixos/hardware-configuration.nix
+    (import "${home-manager}/nixos")
   ];
 
   system.stateVersion = "24.05";
@@ -12,6 +16,8 @@
 
   boot.loader.grub.enable = true;
   boot.loader.grub.device = "/dev/sda";
+
+  time.timeZone = "America/Denver";
 
   environment.systemPackages = with pkgs; [
     git
@@ -45,12 +51,6 @@
     '';
     shellInit = ''
       eval "$(direnv hook bash)"
-
-      develop() {
-        cd $1
-        nix develop
-      }
-      complete -o nospace -F _cd develop
     '';
     shellAliases = {
         rebuild = "sudo nixos-rebuild switch -I nixos-config=/home/jkaye/git/nixos-config/configuration.nix";
@@ -63,6 +63,15 @@
     enable = true;
     shortcut = "Space";
     newSession = true;
+
+    plugins = with pkgs.tmuxPlugins; [
+      continuum
+      resurrect
+    ];
+
+    extraConfig = ''
+      set -g @continuum-restore 'on'
+    '';
   };
 
   # This is the server's hostname you chose during the order process. Feel free to change it.
@@ -113,5 +122,28 @@
       "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABgQC6yLhQ//CuXo9t8HiF4oyD24u/Vh0IAhOJnZEX/375s9VRlh4I/tt9+ftYHM2lEmIwCGsmgZIoTL7xpAkYiyZ8l5jImpggQjvavImNNl/w7OHyvCOCYuQsyPtEkdgMg/7z0+JaeoxK9eTMs4WIm0eJxOzQpasr1zA1ag6vighf5UKX4mR59xaxgyTlSG+k08EkV0Fzjxksyjr1k2v48JCY0AtIHTrngkzpz+DQssCZAyjnGfSSqWF4puyAxs2EkDZauSy0TMMxJ9NwrrgwiAptvcvTacgwSNP8Kyp1amN0X+AhA4EgIKqcrDb9Yu+mDPD0gdMFodhzMWCulXlJJeXYZTDs93s1jseU+k+gvb84ms1MZuoqyNh1bFjPQkXhfgUURm7r6NJZi2WEgoryCZKUzjsY+1C6jWdvjmv9EZStlSFQXyuPb8QYOKAIG1JZvkZ9wt/vVUWdXwpe8/GhRn1O5dJvv8mKb1Ld/EL+7Or57QXyEtcfL6NWHePNq6oDnfM= jkaye@colwksdev001"
       "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABgQDdmVTIFpeY8sXxJupx5egTsb7jnkxkaz7li68RHjF03tDb/9WwpgrIFNcAXR114AlOqIz71s6egkrSG7mPRyVt1cNTjEouwCQDXKE0SZJRibhIxlgL2htRfPIj9xrUjehm8US8csioI2x7ymMi+u0qYv4jxW06eVvemHOvB4MN7RhxAnqNiXik/ng2JglgW3znG7KEbmFvARJqsXFCE7W/G/gS/veOkEumjnyHioz+x8SFe0Nm8cjHH0GBH1ueGP5uhtiGqI84/khMDFAga7iEC7FmWRQlb79F1Oc0lit6Iw+TPWt5s9KLE07wP2AsBG3lRx7PIdzuqHYFaU6qsLYRATtYRv8IPjeU60yBIR6NMLB4EWYVoD/PEAT/LJtaNKvvsXs0lt6WUr5BKQGPz4n1GTZlHMh5gYeHCnd0hzu/zai7rNSC5wHSRgsOPHjQm3wC0LkJ2WiMnRBO4djbWOtUhGOssVqi4H7fAd1ves2rJdVj0tbUfg5ucVcZX/U7b+0= jkaye@jkaye-framework"
     ];
+  };
+
+  home-manager.users.jkaye = {
+    home.stateVersion = "24.05";
+
+    programs.bash = {
+        enable = true;
+        initExtra = ''
+          develop() {
+            cd $1
+            nix develop
+          }
+          complete -o nospace -F _cd develop
+        '';
+    };
+
+    home.file = {
+      ".shells/.keep" = { text = ""; };
+    };
+
+    home.sessionVariables = {
+      TMUX_TMPDIR = "$HOME/.shells";
+    };
   };
 }
